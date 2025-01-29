@@ -41,11 +41,12 @@
                         <!-- Quantity Controls -->
                         <form action="/cart/update/<%= product.productId._id %>" method="POST" class="flex items-center gap-2">
                             <button 
-                                type="button" 
-                                class="w-8 h-8 bg-gray-200 flex items-center justify-center rounded-md"
-                                onclick="this.nextElementSibling.stepDown(); this.form.submit();">
-                                -
+                            type="button" 
+                            class="w-8 h-8 bg-gray-200 flex items-center justify-center rounded-md"
+                            onclick="decreseQuantity('<%= product.productId._id %>')">  
+                            -         
                             </button>
+                            
                             <input 
                                 type="number" 
                                 name="quantity" 
@@ -55,7 +56,7 @@
                             <button 
                                 type="button" 
                                 class="w-8 h-8 bg-gray-200 flex items-center justify-center rounded-md"
-                                onclick="this.previousElementSibling.stepUp(); this.form.submit();">
+                                onclick="increaseQuantity('<%= product.productId._id %>')">
                                 +
                             </button>
                         </form>
@@ -101,5 +102,13 @@
         </div>
     </div>
 </div>
+<script>
+    function decreseQuantity(productId){
+        window.location.href = `/cart/decrese/${productId}`;
+    }
 
+    function increaseQuantity(productId){
+        window.location.href = `/cart/increase/${productId}`
+    }
+</script>
 <%- include('./partials/footer') %>

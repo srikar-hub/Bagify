@@ -63,7 +63,7 @@ router.get("/cart/remove/:productid", isloggedIn, async function (req, res) {
     let user = await userModel.findOne({ email: req.user.email });
 
     let updatedCart = user.cart.filter(function (item) {
-      item.productId.toString !== req.params.id;
+      return item.productId.toString() !== req.params.productid;
     });
     let product = await userModel.updateOne(
       { email: req.user.email },
@@ -74,6 +74,49 @@ router.get("/cart/remove/:productid", isloggedIn, async function (req, res) {
   } catch (err) {
     console.log(err);
     req.flash("error", "Something Went Wrong");
+    res.redirect("/cart");
+  }
+});
+
+router.get("/cart/decrese/:productId", isloggedIn, async function (req, res) {
+  try {
+    let user = await userModel.findOne({ email: req.user.email });
+    let product = user.cart.find(function (item) {
+      return item.productId.toString() === req.params.productId;
+    });
+    if (product) {
+      if (product.quantity > 1) {
+        product.quantity -= 1;
+      }
+    } else {
+      user.cart = user.cart.filter(function (item) {
+        return item.productId.toString() !== req.params.productId;
+      });
+    }
+    await user.save();
+    res.redirect("/cart");
+  } catch (err) {
+    console.log(err);
+    req.flash("error", "Something went wrong");
+    res.redirect("/cart");
+  }
+});
+
+router.get("/cart/increase/:productid", isloggedIn, async function (req, res) {
+  try {
+    let user = await userModel.findOne({ email: req.user.email });
+    let product = user.cart.find(function (item) {
+      return item.productId.toString() === req.params.productid;
+    });
+
+    if (product) {
+      product.quantity += 1;
+    }
+    await user.save();
+    res.redirect("/cart");
+  } catch (err) {
+    console.log(err);
+    req.flash("error", "Something went wrong");
     res.redirect("/cart");
   }
 });
