@@ -15,19 +15,27 @@
 
 <div class="w-full min-h-screen flex flex-col px-20 py-10 gap-10">
     <!-- Title -->
-    <h2 class="text-3xl font-bold mb-5">Your Cart</h2>
+    <h2 class="text-3xl font-bold mb-5">My Cart</h2>
     
     <div class="flex gap-10">
         <!-- Product List -->
         <div class="w-[65%] flex flex-col gap-8">
             <% user.cart.forEach(function (product) { %>
             <div class="w-full flex items-start gap-5 rounded-md overflow-hidden bg-[<%= product.bgcolor %>] p-5 relative">
+                <input type="checkbox" class="cart-checkbox mt-20 ml-2" checked
+    data-price="<%= (product.productId.price - product.productId.discount) * product.quantity %>"
+    data-mrp="<%= (product.productId.price * product.quantity) %>"
+    data-discount="<%= (product.productId.discount *  product.quantity) %>"
+    onchange="updateTotal()"
+>
+
+        
                 <!-- Remove Icon -->
                 <a href="/cart/remove/<%= product.productId._id %>" 
-                   class="absolute top-5 text-red-500 hover:text-red-700 " 
-                   title="Remove from Cart">
-                    <i class="ri-close-circle-line text-2xl"></i>
-                </a>
+                    class="absolute top-5 text-red-500 hover:text-red-700 " 
+                    title="Remove from Cart">
+                     <i class="ri-close-circle-line text-2xl"></i>
+                 </a>
                 <!-- Product Image -->
                 <div class="w-40 h-40 flex items-center justify-center bg-white rounded-md">
                     <img class="w-full h-full object-contain" src="data:image/jpeg;base64,<%= product.productId.image.toString('base64') %>" alt="<%= product.productId.name %>">
@@ -78,11 +86,11 @@
             <div class="space-y-4">
                 <div class="flex justify-between">
                     <span>Total MRP</span>
-                    <span>₹ <%= user.cart.reduce((sum, product) => sum + product.productId.price * product.quantity, 0) %></span>
+                    <span id="total-mrp">₹ <%= user.cart.reduce((sum, product) => sum + product.productId.price * product.quantity, 0) %></span>
                 </div>
                 <div class="flex justify-between">
                     <span>Total Discount</span>
-                    <span>₹ <%= user.cart.reduce((sum, product) => sum + product.productId.discount * product.quantity, 0) %></span>
+                    <span id="total-discount">₹ <%= user.cart.reduce((sum, product) => sum + product.productId.discount * product.quantity, 0) %></span>
                 </div>
                 <div class="flex justify-between">
                     <span>Platform Fee</span>
@@ -95,7 +103,7 @@
                 <div class="w-full h-[1px] bg-gray-200 my-5"></div>
                 <div class="flex justify-between font-semibold text-lg">
                     <span>Total Amount</span>
-                    <span>₹ <%= user.cart.reduce((sum, product) => sum + (product.productId.price - product.productId.discount) * product.quantity, 20) %></span>
+                    <span id="total-price">₹ <%= user.cart.reduce((sum, product) => sum + (product.productId.price - product.productId.discount) * product.quantity, 20) %></span>
                 </div>
             </div>
             <button class="w-full bg-blue-500 text-white rounded-md py-3 mt-5">Checkout</button>
@@ -103,6 +111,7 @@
     </div>
 </div>
 <script>
+    
     function decreseQuantity(productId){
         window.location.href = `/cart/decrese/${productId}`;
     }
@@ -110,5 +119,38 @@
     function increaseQuantity(productId){
         window.location.href = `/cart/increase/${productId}`
     }
+
+    function updateTotal() {
+    let checkboxes = document.querySelectorAll(".cart-checkbox");
+    let total = 0;
+    let totalMrp = 0;
+    let totalDiscount = 0;
+    let discount = 0;
+    let checkedItems=0;
+    checkboxes.forEach(function (eachbox) {
+        if (eachbox.checked) {
+            let price = parseFloat(eachbox.getAttribute("data-price"));
+            let mrp = parseFloat(eachbox.getAttribute("data-mrp"));
+            let discount= parseFloat(eachbox.getAttribute("data-discount"));
+            if (!isNaN(price) && !isNaN(mrp) && !isNaN(discount)) {
+                total += price;
+                totalMrp+=mrp;
+                totalDiscount+=discount;
+                checkedItems++;
+            }
+        }
+    });
+
+    // Add platform fee only if at least one item is selected
+    if (checkedItems > 0) {
+        total += 20; // Platform fee
+    }
+
+    // Update the total price in the UI
+    document.querySelector("#total-price").innerHTML = `₹ ${total}`;
+    document.querySelector("#total-discount").innerHTML = `₹ ${totalDiscount}`;
+    document.querySelector("#total-mrp").innerHTML = `₹ ${totalMrp}`;
+}
+
 </script>
 <%- include('./partials/footer') %>
