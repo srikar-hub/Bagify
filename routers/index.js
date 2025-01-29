@@ -120,4 +120,29 @@ router.get("/cart/increase/:productid", isloggedIn, async function (req, res) {
     res.redirect("/cart");
   }
 });
+
+router.get("/shop/sort", async function (req, res) {
+  try {
+    let products = await productModel.find();
+    let sortby = req.query.sortby;
+    if (sortby === "lowtohigh") {
+      products.sort(function (a, b) {
+        const priceAfterDiscountA = a.price - a.discount;
+        const priceAfterDiscountB = b.price - b.discount;
+        return priceAfterDiscountA - priceAfterDiscountB;
+      });
+    } else {
+      products.sort(function (a, b) {
+        const priceAfterDiscountA = a.price - a.discount;
+        const priceAfterDiscountB = b.price - b.discount;
+        return priceAfterDiscountB - priceAfterDiscountA;
+      });
+    }
+
+    res.render("shop", { products, sortby, success: "" });
+  } catch (err) {
+    req.flash("error", "Something went Wrong try again Later");
+    res.redirect("/shop");
+  }
+});
 module.exports = router;

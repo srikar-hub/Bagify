@@ -10,4 +10,5 @@ router.get("/admin", function (req, res) {
   res.render("createproducts", { success });
 });
 
+
 module.exports = router;
