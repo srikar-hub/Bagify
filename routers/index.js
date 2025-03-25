@@ -3,6 +3,7 @@ const router = express.Router();
 const isloggedIn = require("../middlewares/isloggedIn");
 const productModel = require("../models/product-model");
 const userModel = require("../models/user-model");
+const addressModel = require("../models/Address-model");
 router.get("/", function (req, res) {
   let error = req.flash("error");
   res.render("index", { error, loggedIn: false });
@@ -10,8 +11,9 @@ router.get("/", function (req, res) {
 router.get("/shop", isloggedIn, async function (req, res) {
   let products = await productModel.find();
   let success = req.flash("success");
-  res.render("shop", { products, success });
+  res.render("shop", { products, success, sortby: "default" });
 });
+
 router.post("/addtocart/:productId", isloggedIn, async (req, res) => {
   const productId = req.params.productId;
   const { quantity } = req.body; // Get the quantity from the form submission
@@ -40,21 +42,6 @@ router.post("/addtocart/:productId", isloggedIn, async (req, res) => {
     console.error(err);
     req.flash("error", "Failed to add product to cart");
     res.redirect("/shop");
-  }
-});
-
-router.get("/cart", isloggedIn, async (req, res) => {
-  const success = req.flash("success");
-  const error = req.flash("error");
-
-  try {
-    const user = await userModel.findOne({ email: req.user.email }).populate({
-      path: "cart.productId",
-    });
-    res.render("cart", { user, success, error });
-  } catch (err) {
-    req.flash("error", "Something went wrong");
-    res.redirect("/");
   }
 });
 
@@ -143,6 +130,91 @@ router.get("/shop/sort", async function (req, res) {
   } catch (err) {
     req.flash("error", "Something went Wrong try again Later");
     res.redirect("/shop");
+  }
+});
+
+router.get("/buynow", function (req, res) {
+  res.render("BuyNow", {
+    success: req.flash("success"),
+    error: req.flash("error"),
+  });
+});
+
+router.post("/submit-address", isloggedIn, async function (req, res) {
+  try {
+    let user = await userModel.findOne({ email: req.user.email });
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/buynow");
+    }
+    let { fullName, mobile, pincode, address, city, state } = req.body;
+    let fulladdress = await addressSchema.create({
+      user: req.user.id,
+      fullName,
+      mobile,
+      pincode,
+      address,
+      city,
+      state,
+    });
+    console.log(fulladdress._id);
+    user.address.push(fulladdress._id);
+    await user.save();
+    res.redirect("/buynow");
+  } catch (err) {
+    req.flash("error", "Something went Wrong try again Later");
+    res.redirect("/buynow");
+  }
+});
+
+router.get("/cart", isloggedIn, async (req, res) => {
+  const success = req.flash("success");
+  const error = req.flash("error");
+
+  try {
+    const user = await userModel.findOne({ email: req.user.email }).populate({
+      path: "cart.productId",
+    });
+    res.render("cart", { user, success, error });
+  } catch (err) {
+    req.flash("error", "Something went wrong");
+    res.redirect("/");
+  }
+});
+router.get("/delivery", isloggedIn, async function (req, res) {
+  try {
+    let user = await userModel
+      .findOne({
+        email: req.user.email,
+      })
+      .populate("address");
+
+    res.render("Delivery", { user });
+  } catch (exp) {
+    res.send(exp.message);
+    req.flash("error", "Something went Wrong");
+    res.redirect("/delivery");
+  }
+});
+
+router.get("/proceed/:addressId", isloggedIn, async function (req, res) {
+  const success = req.flash("success");
+  const error = req.flash("error");
+  try {
+    let user = await userModel
+      .findOne({
+        email: req.user.email,
+      })
+      .populate("address");
+
+    let addressId = req.params.addressId;
+    let selectedAddress = user.address.find(function (address) {
+      return address._id.toString() === addressId;
+    });
+    res.render("info", { selectedAddress, success, error });
+  } catch (err) {
+    req.flash("error", "Something went Wrong");
+    res.redirect("/buynow");
   }
 });
 module.exports = router;

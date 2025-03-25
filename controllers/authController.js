@@ -57,5 +57,3 @@ module.exports.logout = async function (req, res) {
   res.clearCookie("token");
   res.redirect("/");
 };
-
-

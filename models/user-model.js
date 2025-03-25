@@ -18,6 +18,13 @@ const userSchema = mongoose.Schema({
       },
     },
   ],
+  address: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "address",
+    },
+  ],
+
   orders: {
     type: Array,
     default: [],
