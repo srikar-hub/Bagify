@@ -1,4 +1,5 @@
 const express = require("express");
+
 const router = express.Router();
 const isloggedIn = require("../middlewares/isloggedIn");
 const productModel = require("../models/product-model");
@@ -148,7 +149,7 @@ router.post("/submit-address", isloggedIn, async function (req, res) {
       return res.redirect("/buynow");
     }
     let { fullName, mobile, pincode, address, city, state } = req.body;
-    let fulladdress = await addressSchema.create({
+    let fulladdress = await addressModel.create({
       user: req.user.id,
       fullName,
       mobile,
@@ -206,7 +207,6 @@ router.get("/proceed/:addressId", isloggedIn, async function (req, res) {
         email: req.user.email,
       })
       .populate("address");
-
     let addressId = req.params.addressId;
     let selectedAddress = user.address.find(function (address) {
       return address._id.toString() === addressId;
@@ -217,4 +217,57 @@ router.get("/proceed/:addressId", isloggedIn, async function (req, res) {
     res.redirect("/buynow");
   }
 });
+router.post("/checkout", isloggedIn, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const selectedItems = req.body.selectedItems;
+
+    if (!selectedItems || selectedItems.length === 0) {
+      return res.redirect("/cart?error=Please select items to buy.");
+    }
+
+    const user = await userModel.findById(userId).populate("cart.productId");
+
+    if (!user) {
+      return res.redirect("/cart?error=User not found.");
+    }
+
+    // Ensure orders exists
+    if (!user.orders) {
+      user.orders = [];
+    }
+
+    // Filter selected items
+    const selectedProducts = user.cart.filter((product) =>
+      selectedItems.includes(product.productId._id.toString())
+    );
+
+    if (selectedProducts.length === 0) {
+      return res.redirect("/cart?error=No valid items selected.");
+    }
+
+    // Move selected products to orders
+    selectedProducts.forEach((product) => {
+      user.orders.push({
+        productId: product.productId._id, // Ensure correct format
+        quantity: product.quantity,
+      });
+    });
+
+    // Remove selected items from cart
+    user.cart = user.cart.filter(
+      (product) => !selectedItems.includes(product.productId._id.toString())
+    );
+
+    // Save user data
+    await user.save();
+    console.log("Updated Orders:", user.orders); // Debugging log
+
+    res.redirect("/delivery?success=Items moved to orders successfully.");
+  } catch (error) {
+    console.error("Checkout Error:", error);
+    res.redirect("/cart?error=Something went wrong.");
+  }
+});
+
 module.exports = router;

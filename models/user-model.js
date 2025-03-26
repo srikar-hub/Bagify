@@ -24,11 +24,22 @@ const userSchema = mongoose.Schema({
       ref: "address",
     },
   ],
-
-  orders: {
-    type: Array,
-    default: [],
-  },
+  orders: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product",
+      },
+      quantity: {
+        type: Number,
+        default: 1,
+      },
+      orderDate: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   contact: Number,
   picture: String,
 });

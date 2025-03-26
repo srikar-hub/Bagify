@@ -17,28 +17,14 @@
             <h4 class="text-lg font-medium">Sort By</h4>
             <form action="/shop/sort" method="GET" class="mt-2">
                 <select name="sortby" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-        <option value="default" <%= sortby === "default" ? "selected" : "" %>>Select</option>
-        <option value="lowtohigh" <%= sortby === "lowtohigh" ? "selected" : "" %>>Price (Low to High)</option>
-        <option value="hightolow" <%= sortby === "hightolow" ? "selected" : "" %>>Price (High to Low)</option>
+                    <option value="default" <%= sortby === "default" ? "selected" : "" %>>Select</option>
+                    <option value="lowtohigh" <%= sortby === "lowtohigh" ? "selected" : "" %>>Price (Low to High)</option>
+                    <option value="hightolow" <%= sortby === "hightolow" ? "selected" : "" %>>Price (High to Low)</option>
                 </select>
             </form>
         </div>
-        <div class="mb-5">
-            <h4 class="text-lg font-medium">Categories</h4>
-            <ul class="mt-2 space-y-2">
-                <li><a href="#" class="text-gray-600 hover:text-blue-500">New Collection</a></li>
-                <li><a href="#" class="text-gray-600 hover:text-blue-500">All Products</a></li>
-                <li><a href="#" class="text-gray-600 hover:text-blue-500">Discounted Products</a></li>
-            </ul>
-        </div>
-        <div>
-            <h4 class="text-lg font-medium">Filter By</h4>
-            <ul class="mt-2 space-y-2">
-                <li><a href="#" class="text-gray-600 hover:text-blue-500">Availability</a></li>
-                <li><a href="#" class="text-gray-600 hover:text-blue-500">Discount</a></li>
-            </ul>
-        </div>
     </aside>
+    
     <!-- Product Grid -->
     <main class="w-3/4 grid grid-cols-4 gap-6 px-5">
         <% products.forEach(product => { %>
@@ -53,22 +39,19 @@
                     <h3 class="text-lg font-semibold"><%= product.name %></h3>
                     <div class="mt-2 flex items-center gap-2">
                         <% if (product.discount > 0) { %>
-                            <!-- Discounted Price -->
                             <span class="text-red-500 font-bold text-lg">
                                 ₹<%= product.price-product.discount %>
                             </span>
                             <span class="text-gray-500 line-through text-sm">₹<%= product.price %></span>
-                
-                            <!-- Discount Message -->
                             <span class="text-green-500 text-sm font-medium ml-2">
                                 (₹<%= product.discount %> off)
                             </span>
                         <% } else { %>
-                            <!-- Original Price -->
                             <span class="font-bold text-lg">₹<%= product.price %></span>
                         <% } %>
                     </div>
-                   <!-- Add to Cart Form -->
+                   
+                    <!-- Add to Cart Form -->
                     <form action="/addtocart/<%= product._id %>" method="POST" class="mt-4 flex items-center gap-2">
                         <input type="number" name="quantity" value="1" min="1" class="w-16 border border-gray-300 rounded px-2 py-1">
                         <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600">
@@ -79,6 +62,15 @@
             </div>
         <% }); %>
     </main>
+</div>
+
+<!-- Checkout Button -->
+<div class="w-full flex justify-center mt-10">
+    <form action="/checkout" method="POST">
+        <button type="submit" class="px-6 py-3 bg-[#FFD814] hover:bg-[#F7CA00] text-black font-medium rounded-lg shadow-md">
+            Place Order
+        </button>
+    </form>
 </div>
 
 <%- include('./partials/footer') %>
