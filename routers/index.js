@@ -161,7 +161,7 @@ router.post("/submit-address", isloggedIn, async function (req, res) {
     console.log(fulladdress._id);
     user.address.push(fulladdress._id);
     await user.save();
-    res.redirect("/buynow");
+    res.redirect("/delivery");
   } catch (err) {
     req.flash("error", "Something went Wrong try again Later");
     res.redirect("/buynow");
@@ -249,7 +249,7 @@ router.post("/checkout", isloggedIn, async (req, res) => {
     // Move selected products to orders
     selectedProducts.forEach((product) => {
       user.orders.push({
-        productId: product.productId._id, // Ensure correct format
+        productId: product.productId._id,
         quantity: product.quantity,
       });
     });
@@ -261,12 +261,27 @@ router.post("/checkout", isloggedIn, async (req, res) => {
 
     // Save user data
     await user.save();
-    console.log("Updated Orders:", user.orders); // Debugging log
 
     res.redirect("/delivery?success=Items moved to orders successfully.");
   } catch (error) {
-    console.error("Checkout Error:", error);
     res.redirect("/cart?error=Something went wrong.");
+  }
+});
+
+router.get("/myaccount", isloggedIn, async function (req, res) {
+  try {
+    let user = await userModel
+      .findOne({
+        email: req.user.email,
+      })
+      .populate("address");
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.render("myAccount", { user });
+  } catch (error) {
+    console.log("error", error);
   }
 });
 
