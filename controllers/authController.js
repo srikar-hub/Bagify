@@ -17,7 +17,7 @@ module.exports.registerUser = async function (req, res) {
           });
           let token = jwt.sign({ email, userid: user._id }, "shshshsh");
           res.cookie("token", token);
-          res.status(200).send(user);
+          res.redirect("/");
         });
       });
     } else {
